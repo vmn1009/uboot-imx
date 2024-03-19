@@ -47,17 +47,17 @@
 		regulator-always-on;
 	};
 
-	//reg_usdhc2_vmmc: regulator-usdhc2 {
-	//	compatible = "regulator-fixed";
-	//	pinctrl-names = "default";
-	//	pinctrl-0 = <&pinctrl_reg_usdhc2_vmmc>;
-	//	regulator-name = "VSD_3V3";
-	//	regulator-min-microvolt = <3300000>;
-	//	regulator-max-microvolt = <3300000>;
-	//	gpio = <&gpio2 19 GPIO_ACTIVE_HIGH>;
-	//	off-on-delay-us = <20000>;
-	//	enable-active-high;
-	//};
+	reg_usdhc2_vmmc: regulator-usdhc2 {
+		compatible = "regulator-fixed";
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_reg_usdhc2_vmmc>;
+		regulator-name = "VSD_3V3";
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
+		gpio = <&gpio2 19 GPIO_ACTIVE_HIGH>;
+		off-on-delay-us = <20000>;
+		enable-active-high;
+	};
 
 	ir-receiver {
 		compatible = "gpio-ir-receiver";
@@ -405,6 +405,11 @@
 		interrupts = <11 8>;
 		status = "okay";
 
+		port {
+			typec1_dr_sw: endpoint {
+				remote-endpoint = <&usb1_drd_sw>;
+			};
+		};
 
 		typec1_con: connector {
 			compatible = "usb-c-connector";
@@ -686,9 +691,21 @@
 };
 
 &usbotg1 {
-	picophy,pre-emp-curr-control = <3>;
-	picophy,dc-vol-level-adjust = <7>;
+	dr_mode = "otg";
+	hnp-disable;
+	srp-disable;
+	adp-disable;
+	usb-role-switch;
+	disable-over-current;
+	samsung,picophy-pre-emp-curr-control = <3>;
+	samsung,picophy-dc-vol-level-adjust = <7>;
 	status = "okay";
+
+	port {
+		usb1_drd_sw: endpoint {
+			remote-endpoint = <&typec1_dr_sw>;
+		};
+	};
 };
 
 &usdhc2 {
@@ -698,9 +715,9 @@
 	pinctrl-0 = <&pinctrl_usdhc2>, <&pinctrl_usdhc2_gpio>;
 	pinctrl-1 = <&pinctrl_usdhc2_100mhz>, <&pinctrl_usdhc2_gpio>;
 	pinctrl-2 = <&pinctrl_usdhc2_200mhz>, <&pinctrl_usdhc2_gpio>;
-	cd-gpios = <&gpio2 12 GPIO_ACTIVE_LOW>;
+	cd-gpios = <&gpio1 15 GPIO_ACTIVE_LOW>;
 	bus-width = <4>;
-	//vmmc-supply = <&reg_usdhc2_vmmc>;
+	vmmc-supply = <&reg_usdhc2_vmmc>;
 	status = "okay";
 };
 
@@ -856,11 +873,11 @@
 		>;
 	};
 
-	//pinctrl_reg_usdhc2_vmmc: regusdhc2vmmcgrp {
-	//	fsl,pins = <
-	//		MX8MM_IOMUXC_SD2_RESET_B_GPIO2_IO19	0x41
-	//	>;
-	//};
+	pinctrl_reg_usdhc2_vmmc: regusdhc2vmmcgrp {
+		fsl,pins = <
+			MX8MM_IOMUXC_SD2_RESET_B_GPIO2_IO19	0x41
+		>;
+	};
 
 	pinctrl_sai1: sai1grp {
 		fsl,pins = <
@@ -1005,7 +1022,7 @@
 
 	pinctrl_usdhc2_gpio: usdhc2grpgpiogrp {
 		fsl,pins = <
-			MX8MM_IOMUXC_SD2_RESET_B_GPIO2_IO19	0x1c4
+			MX8MM_IOMUXC_GPIO1_IO15_GPIO1_IO15	0x1c4
 		>;
 	};
 
